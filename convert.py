@@ -28,22 +28,11 @@ def prepare_default_dataset(output_path="oasst1"):
     df_assistant = df_assistant[
         ["instruction", "output", "message_id", "parent_id", "lang", "rank"]
     ].rename(columns={"message_id": "id"})
-
-    df_assistant[(df_assistant["rank"] == 0.0) & (df_assistant["lang"] == "en")][
-        ["instruction", "output", "id", "parent_id"]
-    ].to_parquet(os.path.join(output_path, "train_full.pq"), index=False)
-
-    df_assistant[df_assistant["lang"] == "en"][
-        ["instruction", "output", "id", "parent_id"]
-    ].to_parquet(os.path.join(output_path, "train_full_allrank.pq"), index=False)
-
-    df_assistant[df_assistant["rank"] == 0.0][
-        ["instruction", "output", "id", "parent_id"]
-    ].to_parquet(os.path.join(output_path, "train_full_multilang.pq"), index=False)
-
-    df_assistant[["instruction", "output", "id", "parent_id"]].to_parquet(
-        os.path.join(output_path, "train_full_multilang_allrank.pq"), index=False
-    )
+    
+    path = os.path.join(output_path, "train_full.jsonl")
+    df_assistant.to_json(path, orient="records", lines=True)
+    dataset = load_dataset("json", data_files=path)
+    dataset.push_to_hub("studio-ousia/oasst1-instruction")
 
     return df_assistant[(df_assistant["rank"] == 0.0) & (df_assistant["lang"] == "en")]
 
@@ -71,10 +60,13 @@ def prepare_default_dataset_ja(output_path="oasst1-89k-ja"):
         ["instruction", "output", "message_id", "parent_id", "lang"]
     ].rename(columns={"message_id": "id"})
     
-    df_assistant.to_parquet(os.path.join(output_path, "train_full.pq"), index=False)
+    path = os.path.join(output_path, "train_full.jsonl")
+    df_assistant.to_json(path, orient="records", lines=True)
+    dataset = load_dataset("json", data_files=path)
+    dataset.push_to_hub("studio-ousia/oasst1-89k-ja-instruction")
 
     return df_assistant
 
 
 if __name__ == "__main__":
-    prepare_default_dataset_ja()
+    prepare_default_dataset()
